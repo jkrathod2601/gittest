@@ -95,9 +95,13 @@
 
         var canvas = generateWallpaper();
         
-        canvas.style.maxWidth = '100%';
-        canvas.style.height = 'auto';
-        canvas.style.display = 'block';
+        canvas.toBlob(function(blob) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                document.body.innerHTML = '<img src="' + reader.result + '" style="width:100%; height:auto; display:block; margin:0; padding:0;">';
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/' + format);
     </script>
 </body>
 </html>
