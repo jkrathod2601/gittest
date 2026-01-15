@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Wallpaper</title>
+</head>
+<body style="margin: 0; padding: 0; background: #000;">
+    <canvas id="wallpaper"></canvas>
+    <script>
+        var params = new URLSearchParams(window.location.search);
+        var width = parseInt(params.get('width')) || 1080;
+        var height = parseInt(params.get('height')) || 1920;
+        var format = params.get('format') || 'png';
+        
+        function getDayOfYear() {
+            var now = new Date();
+            var start = new Date(now.getFullYear(), 0, 0);
+            var diff = now - start;
+            var oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        function generateWallpaper() {
+            var canvas = document.getElementById('wallpaper');
+            var ctx = canvas.getContext('2d');
+            var dayOfYear = getDayOfYear();
+            var now = new Date();
+            var totalDays = isLeapYear(now.getFullYear()) ? 366 : 365;
+            var percentage = Math.round((dayOfYear / totalDays) * 100);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+
+            var cols = 25;
+            var rows = Math.ceil(totalDays / cols);
+            var dotSize = Math.min(width / (cols * 3), height / (rows * 3.5));
+            var spacing = dotSize * 2.5;
+            var gridWidth = cols * spacing;
+            var gridHeight = rows * spacing;
+            var startX = (width - gridWidth) / 2 + spacing / 2;
+            var startY = (height - gridHeight) / 2;
+
+            var accentHue = (dayOfYear * 137.5) % 360;
+            
+            for (var i = 0; i < totalDays; i++) {
+                var col = i % cols;
+                var row = Math.floor(i / cols);
+                var x = startX + col * spacing;
+                var y = startY + row * spacing;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                
+                if (i < dayOfYear) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                } else if (i === dayOfYear) {
+                    ctx.fillStyle = 'hsl(' + accentHue + ', 75%, 55%)';
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+                }
+                
+                ctx.fill();
+            }
+
+            var textY = startY + gridHeight + height * 0.06;
+            
+            var months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            var monthName = months[now.getMonth()];
+            var date = now.getDate();
+            
+            var dateSize = height * 0.18;
+            var monthSize = height * 0.045;
+            var dateX = width * 0.88;
+            var dateY = height * 0.92;
+            
+            ctx.textAlign = 'right';
+            ctx.font = '200 ' + dateSize + 'px Arial';
+            ctx.fillStyle = 'rgba(128, 128, 128, 0.25)';
+            ctx.fillText(date, dateX, dateY);
+            
+            ctx.font = '300 ' + monthSize + 'px Arial';
+            ctx.fillStyle = 'rgba(128, 128, 128, 0.25)';
+            ctx.fillText(monthName, dateX, dateY - dateSize * 0.6);
+
+            return canvas;
+        }
+
+        var canvas = generateWallpaper();
+        
+        canvas.toBlob(function(blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'wallpaper-day-' + getDayOfYear() + '.' + format;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+        }, 'image/' + format);
+    </script>
+</body>
+</html>
