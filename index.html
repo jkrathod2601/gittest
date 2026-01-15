@@ -95,19 +95,9 @@
 
         var canvas = generateWallpaper();
         
-        canvas.toBlob(function(blob) {
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'wallpaper-day-' + getDayOfYear() + '.' + format;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            canvas.style.maxWidth = '100%';
-            canvas.style.height = 'auto';
-        }, 'image/' + format);
+        canvas.style.maxWidth = '100%';
+        canvas.style.height = 'auto';
+        canvas.style.display = 'block';
     </script>
 </body>
 </html>
